@@ -99,6 +99,7 @@ body {
   background: var(--white);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip; /* hard guard against accidental sideways scroll */
 }
 
 img { max-width: 100%; height: auto; display: block; }
@@ -2375,7 +2376,6 @@ section[id] { scroll-margin-top: 96px; }
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--text-light);
-  white-space: nowrap;
 }
 .ess-not-for-items {
   display: flex;
