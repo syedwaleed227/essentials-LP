@@ -1398,9 +1398,73 @@ span.grev-avatar { display: inline-block; }
   .grev-count { opacity: 1 !important; transform: none !important; }
 }
 
+/* ---- Awwwards layer: site-wide motion & interaction ---- */
+
+/* Scroll progress bar */
+#scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 100%;
+  z-index: 600;
+  background: linear-gradient(90deg, #E3B93C, #D4AF37, #8C6A12);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+/* Film grain finish */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 650;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Hero headline — word-by-word masked rise */
+.hh-w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.hh-w > span {
+  display: inline-block;
+  transform: translateY(115%);
+  animation: hhRise 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes hhRise { to { transform: translateY(0); } }
+
+/* Cursor spotlight on interactive cards */
+.story-pill { position: relative; }
+.card-3d::after, .step-card::after, .story-pill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(176,138,28,0.15), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+  z-index: 1;
+}
+.card-3d:hover::after, .step-card:hover::after, .story-pill:hover::after { opacity: 1; }
+
+/* Stat hover lift */
+.stat { transition: transform 0.4s cubic-bezier(0.22,1,0.36,1); }
+.stat:hover { transform: translateY(-5px); }
+
+/* Magnetic buttons get GPU hints */
+.btn { will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  #scroll-progress { display: none; }
+  body::after { display: none; }
+  .hh-w > span { transform: none !important; animation: none !important; }
+  .card-3d::after, .step-card::after, .story-pill::after { display: none; }
+}
+
 /* ---- Reveal animations ---- */
-.reveal { opacity: 0; transform: translateY(34px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal { opacity: 0; transform: translateY(38px); filter: blur(10px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1), filter 0.8s cubic-bezier(0.16,1,0.3,1); }
+.reveal.visible { opacity: 1; transform: translateY(0); filter: blur(0); }
 .reveal-d1 { transition-delay: 0.08s; }
 .reveal-d2 { transition-delay: 0.16s; }
 .reveal-d3 { transition-delay: 0.24s; }
@@ -1419,7 +1483,7 @@ span.grev-avatar { display: inline-block; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .fade-up, .reveal { opacity: 1 !important; transform: none !important; }
+  .fade-up, .reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
   #hero-canvas { display: none; }
 }
 
@@ -2677,6 +2741,97 @@ var REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').match
     }, { rootMargin: '600px 0px' }).observe(trigger);
   } else {
     loadMaps();
+  }
+})();
+
+/* ---- Awwwards layer: progress, word reveal, magnetic, spotlight ---- */
+(function initAwwwardsLayer() {
+  var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var FINE = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* Scroll progress bar */
+  if (!RM) {
+    var bar = document.createElement('div');
+    bar.id = 'scroll-progress';
+    document.body.appendChild(bar);
+    var ticking = false;
+    function updateBar() {
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      var p = h > 0 ? (window.scrollY || window.pageYOffset) / h : 0;
+      bar.style.transform = 'scaleX(' + Math.min(Math.max(p, 0), 1) + ')';
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(updateBar); }
+    }, { passive: true });
+    updateBar();
+  }
+
+  /* Hero headline word-by-word reveal */
+  if (!RM) {
+    var h1 = document.querySelector('.hero-h1');
+    if (h1) {
+      h1.classList.remove('fade-up', 'fd-1');
+      h1.style.opacity = '1';
+      var idx = 0;
+      function splitNode(node, parent, cls) {
+        var words = node.textContent.split(/(\s+)/);
+        words.forEach(function (w) {
+          if (!w) return;
+          if (/^\s+$/.test(w)) { parent.appendChild(document.createTextNode(' ')); return; }
+          var outer = document.createElement('span');
+          outer.className = 'hh-w';
+          var inner = document.createElement('span');
+          if (cls) inner.className = cls;
+          inner.textContent = w;
+          inner.style.animationDelay = (0.12 + idx * 0.07) + 's';
+          idx++;
+          outer.appendChild(inner);
+          parent.appendChild(outer);
+        });
+      }
+      var frag = document.createDocumentFragment();
+      Array.prototype.slice.call(h1.childNodes).forEach(function (node) {
+        if (node.nodeType === 3) splitNode(node, frag, '');
+        else if (node.nodeType === 1) splitNode(node, frag, node.className);
+        else frag.appendChild(node.cloneNode(true));
+      });
+      h1.innerHTML = '';
+      h1.appendChild(frag);
+    }
+  }
+
+  /* Magnetic CTA buttons */
+  if (!RM && FINE) {
+    document.querySelectorAll('.btn').forEach(function (btn) {
+      var raf = null;
+      btn.addEventListener('mousemove', function (e) {
+        if (raf) return;
+        raf = requestAnimationFrame(function () {
+          var r = btn.getBoundingClientRect();
+          var dx = (e.clientX - r.left - r.width / 2) / r.width;
+          var dy = (e.clientY - r.top - r.height / 2) / r.height;
+          btn.style.transform = 'translate(' + (dx * 9) + 'px, ' + (dy * 7 - 2) + 'px)';
+          raf = null;
+        });
+      });
+      btn.addEventListener('mouseleave', function () {
+        btn.style.transition = 'transform 0.5s cubic-bezier(0.22,1,0.36,1)';
+        btn.style.transform = '';
+        setTimeout(function () { btn.style.transition = ''; }, 500);
+      });
+    });
+  }
+
+  /* Cursor spotlight position on cards (pairs with ::after radial) */
+  if (!RM && FINE) {
+    document.querySelectorAll('.card-3d, .step-card, .story-pill').forEach(function (el) {
+      el.addEventListener('mousemove', function (e) {
+        var r = el.getBoundingClientRect();
+        el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
   }
 })();
 
