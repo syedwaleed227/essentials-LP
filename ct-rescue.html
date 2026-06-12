@@ -2392,106 +2392,138 @@ var REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').match
   });
 })();
 
-/* ---- Hero particle constellation (vanilla canvas, no deps) ---- */
-(function initParticles() {
-  if (REDUCED_MOTION) return;
+/* ---- Hero background animation: Deadline clock ---- */
+(function initHeroCanvas() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var canvas = document.getElementById('hero-canvas');
   if (!canvas) return;
   var ctx = canvas.getContext('2d');
   var hero = document.getElementById('hero');
-  var particles = [];
-  var mouse = { x: -9999, y: -9999 };
   var running = true;
+  var mouse = { x: -9999, y: -9999 };
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W = 0, H = 0;
 
   function resize() {
-    canvas.width = hero.offsetWidth * dpr;
-    canvas.height = hero.offsetHeight * dpr;
-    canvas.style.width = hero.offsetWidth + 'px';
-    canvas.style.height = hero.offsetHeight + 'px';
+    W = hero.offsetWidth; H = hero.offsetHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    seed();
-  }
-
-  function seed() {
-    var w = hero.offsetWidth, h = hero.offsetHeight;
-    var count = Math.min(Math.floor((w * h) / 16000), 110);
-    particles = [];
-    for (var i = 0; i < count; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r: Math.random() * 1.8 + 0.6,
-        hot: Math.random() < 0.18
-      });
-    }
-  }
-
-  function step() {
-    if (!running) return;
-    var w = hero.offsetWidth, h = hero.offsetHeight;
-    ctx.clearRect(0, 0, w, h);
-
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < -10) p.x = w + 10; else if (p.x > w + 10) p.x = -10;
-      if (p.y < -10) p.y = h + 10; else if (p.y > h + 10) p.y = -10;
-
-      // gentle pull toward cursor
-      var dxm = mouse.x - p.x, dym = mouse.y - p.y;
-      var dm = Math.sqrt(dxm * dxm + dym * dym);
-      if (dm < 180 && dm > 0.001) {
-        p.x += dxm / dm * 0.25;
-        p.y += dym / dm * 0.25;
-      }
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      // deep-green / emerald particles tuned for the light background
-      ctx.fillStyle = p.hot ? 'rgba(242,104,34,0.70)' : 'rgba(27,43,64,0.40)';
-      ctx.fill();
-    }
-
-    // connecting lines
-    for (var a = 0; a < particles.length; a++) {
-      for (var b = a + 1; b < particles.length; b++) {
-        var dx = particles[a].x - particles[b].x;
-        var dy = particles[a].y - particles[b].y;
-        var dist2 = dx * dx + dy * dy;
-        if (dist2 < 130 * 130) {
-          var alpha = (1 - Math.sqrt(dist2) / 130) * 0.14;
-          ctx.beginPath();
-          ctx.moveTo(particles[a].x, particles[a].y);
-          ctx.lineTo(particles[b].x, particles[b].y);
-          ctx.strokeStyle = 'rgba(27,43,64,' + alpha.toFixed(3) + ')';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(step);
+    setup();
   }
 
   hero.addEventListener('mousemove', function (e) {
-    var rect = hero.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
+    var r = hero.getBoundingClientRect();
+    mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
   });
   hero.addEventListener('mouseleave', function () { mouse.x = -9999; mouse.y = -9999; });
 
-  // pause when hero is off-screen
   new IntersectionObserver(function (entries) {
-    var visible = entries[0].isIntersecting;
-    if (visible && !running) { running = true; requestAnimationFrame(step); }
-    running = visible;
+    var vis = entries[0].isIntersecting;
+    if (vis && !running) { running = true; requestAnimationFrame(loop); }
+    running = vis;
   }).observe(hero);
+
+  function loop(ts) {
+    if (!running) return;
+    draw(ts / 1000);
+    requestAnimationFrame(loop);
+  }
+
+  /* Deadline clock: sweeping hand, tick pulses, time-rush speed lines */
+  var cx, cy, R, pulses = [], lines = [], lastQuarter = -1;
+
+  function setup() {
+    cx = W * 0.74; cy = H * 0.52;
+    R = Math.min(W, H) * 0.34;
+    pulses = [];
+    lines = [];
+    var n = Math.min(Math.floor(H / 46), 18);
+    for (var i = 0; i < n; i++) {
+      lines.push({ y: Math.random() * H, len: 60 + Math.random() * 160, x: Math.random() * W, v: 1.2 + Math.random() * 2.6, a: 0.04 + Math.random() * 0.06 });
+    }
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    var ox = mouse.x > 0 ? (mouse.x - W / 2) * 0.01 : 0;
+    var X = cx + ox, Y = cy;
+
+    /* time-rush speed lines */
+    for (var i = 0; i < lines.length; i++) {
+      var ln = lines[i];
+      ln.x -= ln.v;
+      if (ln.x + ln.len < 0) { ln.x = W + 30; ln.y = Math.random() * H; }
+      var lg = ctx.createLinearGradient(ln.x, 0, ln.x + ln.len, 0);
+      lg.addColorStop(0, 'rgba(242,104,34,0)');
+      lg.addColorStop(1, 'rgba(242,104,34,' + ln.a + ')');
+      ctx.strokeStyle = lg;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(ln.x, ln.y);
+      ctx.lineTo(ln.x + ln.len, ln.y);
+      ctx.stroke();
+    }
+
+    /* clock face */
+    ctx.beginPath();
+    ctx.arc(X, Y, R, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(27,43,64,0.14)';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    for (var m = 0; m < 60; m++) {
+      var a = m * Math.PI / 30;
+      var big = m % 5 === 0;
+      var r1 = R - (big ? 14 : 7);
+      ctx.beginPath();
+      ctx.moveTo(X + Math.cos(a) * r1, Y + Math.sin(a) * r1);
+      ctx.lineTo(X + Math.cos(a) * (R - 2), Y + Math.sin(a) * (R - 2));
+      ctx.strokeStyle = big ? 'rgba(27,43,64,0.20)' : 'rgba(27,43,64,0.09)';
+      ctx.lineWidth = big ? 2 : 1;
+      ctx.stroke();
+    }
+
+    /* hands: minute slow, second sweeping (8s/rev) */
+    var sa = t * (Math.PI * 2 / 8) - Math.PI / 2;
+    var ma = t * (Math.PI * 2 / 96) - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(X, Y);
+    ctx.lineTo(X + Math.cos(ma) * R * 0.52, Y + Math.sin(ma) * R * 0.52);
+    ctx.strokeStyle = 'rgba(27,43,64,0.30)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    /* second hand with gradient + glow tip */
+    ctx.beginPath();
+    ctx.moveTo(X - Math.cos(sa) * R * 0.12, Y - Math.sin(sa) * R * 0.12);
+    ctx.lineTo(X + Math.cos(sa) * R * 0.82, Y + Math.sin(sa) * R * 0.82);
+    ctx.strokeStyle = 'rgba(242,104,34,0.65)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+    var tx = X + Math.cos(sa) * R * 0.82, ty = Y + Math.sin(sa) * R * 0.82;
+    ctx.beginPath(); ctx.arc(tx, ty, 3.4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(242,104,34,0.9)'; ctx.fill();
+    ctx.beginPath(); ctx.arc(X, Y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(27,43,64,0.45)'; ctx.fill();
+
+    /* emit a pulse every quarter rotation */
+    var quarter = Math.floor(((sa + Math.PI / 2) / (Math.PI / 2)) % 4 + 4) % 4;
+    if (quarter !== lastQuarter) { lastQuarter = quarter; pulses.push({ r: R * 0.2, a: 0.4 }); }
+    for (var p = pulses.length - 1; p >= 0; p--) {
+      var pu = pulses[p];
+      pu.r += 1.6; pu.a -= 0.004;
+      if (pu.a <= 0) { pulses.splice(p, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(X, Y, pu.r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(242,104,34,' + pu.a + ')';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+  }
 
   window.addEventListener('resize', resize);
   resize();
-  requestAnimationFrame(step);
+  requestAnimationFrame(loop);
 })();
 
 /* ---- Parallax orbs ---- */
