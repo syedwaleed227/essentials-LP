@@ -95,6 +95,29 @@
   </script>
 
 <style>
+/* ===== Self-hosted Aptos (Microsoft) ===== */
+@font-face {
+  font-family: 'Aptos';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/aptos-regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Aptos';
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+  src: url('fonts/aptos-extrabold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Aptos Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/aptos-display.woff2') format('woff2');
+}
+
 /* ===== IHG Essentials — 3D Immersive Redesign (Light Theme) ===== */
 
 :root {
@@ -257,7 +280,7 @@ section[id] { scroll-margin-top: 150px; }
 #urgency-bar {
   position: relative;
   z-index: 300;
-  background: linear-gradient(90deg, var(--orange-deep), var(--orange), var(--orange-deep));
+  background: linear-gradient(90deg, #C05621, #E2691F, #C05621);
   background-size: 200% 100%;
   animation: urgencyShift 8s linear infinite;
   color: #fff;
@@ -739,7 +762,7 @@ section[id] { scroll-margin-top: 150px; }
   overflow: hidden;
   background:
     radial-gradient(ellipse 70% 90% at 85% 50%, rgba(0,0,0,0.14), transparent 60%),
-    linear-gradient(150deg, var(--orange-deep) 0%, var(--orange) 55%, #A8470F 100%);
+    linear-gradient(150deg, #C05621 0%, #E2691F 55%, #A8470F 100%);
 }
 .ct-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; position: relative; z-index: 2; }
 #ct-urgency .eyebrow { color: rgba(255,255,255,0.80); }
@@ -784,7 +807,7 @@ section[id] { scroll-margin-top: 150px; }
 }
 .cd-lbl { display: block; margin-top: 7px; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
 .countdown-penalty { margin-top: 20px; font-size: 0.82rem; color: rgba(255,255,255,0.85); }
-.countdown-penalty strong { color: #C7D6EC; }
+.countdown-penalty strong { color: #FFE3CD; }
 
 /* ---- Pricing (navy contrast card on light page) ---- */
 #pricing { position: relative; padding: 110px 0; overflow: hidden; background: var(--bg-0); }
