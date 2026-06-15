@@ -15,6 +15,29 @@
 
 if (!defined('ABSPATH')) { exit; } // no direct access
 
+/* ==========================================================================
+ * SMTP WITHOUT ANY PLUGIN
+ * --------------------------------------------------------------------------
+ * This routes WordPress email straight through your mailbox's SMTP server,
+ * so leads arrive reliably WITHOUT installing WP Mail SMTP (or any plugin).
+ *
+ * >>> Fill in the 4 values marked CHANGE-ME with your hajeirgroup.com mailbox
+ *     settings (your email host/cPanel/Google Workspace provides these).
+ *     Do NOT share the password with anyone — just put it here on the server.
+ * ========================================================================== */
+add_action('phpmailer_init', 'ihg_configure_smtp');
+function ihg_configure_smtp($phpmailer) {
+    $phpmailer->isSMTP();
+    $phpmailer->Host       = 'smtp.hajeirgroup.com';      // CHANGE-ME: your SMTP host
+    $phpmailer->Port       = 587;                          // 587 = TLS, 465 = SSL
+    $phpmailer->SMTPSecure = 'tls';                        // 'tls' for 587, 'ssl' for 465
+    $phpmailer->SMTPAuth   = true;
+    $phpmailer->Username   = 'waleed@hajeirgroup.com';     // CHANGE-ME: SMTP username
+    $phpmailer->Password   = 'YOUR-MAILBOX-PASSWORD';      // CHANGE-ME: SMTP password / app password
+    // Send "from" your own domain so the mail server accepts it (avoids spam):
+    $phpmailer->setFrom('waleed@hajeirgroup.com', 'IHG Website');
+}
+
 /* -------------------------------------------------------------------------- */
 
 add_action('wp_ajax_ihg_form_submit',        'ihg_handle_form_submit'); // logged-in users
