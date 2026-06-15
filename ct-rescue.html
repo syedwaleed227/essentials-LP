@@ -1626,10 +1626,17 @@ h1, h2, h3, h4, h5, h6,
   font-family: 'Aptos', 'Space Grotesk', 'Inter', sans-serif !important;
   font-weight: 700 !important;
 }
-/* Mobile: don't vertically-center the tall hero (was pushing the top badges
-   up behind the navbar on phones — see overflow:hidden clipping) */
+/* Mobile: don't vertically-center the tall hero, and give the hero enough
+   top clearance so the floating navbar never cuts off the badges/headline.
+   (JS in #hero-nav-clearance refines this to the navbar's exact height.) */
 @media (max-width: 900px) {
   #hero { align-items: flex-start; min-height: 0; }
+}
+@media (max-width: 768px) {
+  .hero-inner { padding-top: 188px; }
+}
+@media (max-width: 520px) {
+  .hero-inner { padding-top: 180px; }
 }
 </style>
 </head>
@@ -3179,6 +3186,8 @@ function ihgPostBody(fields) {
     window.addEventListener('load', fit);
     window.addEventListener('resize', fit);
     window.addEventListener('orientationchange', fit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    setTimeout(fit, 300);
     if (document.readyState !== 'loading') fit();
     else document.addEventListener('DOMContentLoaded', fit);
   })();
