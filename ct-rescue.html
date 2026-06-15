@@ -1596,6 +1596,26 @@ body::after {
   .cta-band { padding: 72px 0; }
 }
 </style>
+<style id="mobile-tune">
+/* ---- Mobile hero polish & device optimization ---- */
+@media (max-width: 768px) {
+  .hero-text { text-align: center; margin-left: auto; margin-right: auto; }
+  .hero-badges { justify-content: center; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-includes { max-width: 380px; margin-left: auto; margin-right: auto; }
+  .hero-price-row { justify-content: center; }
+  .hero-ctas { justify-content: center; }
+  .hero-ctas .btn { flex: 1 1 auto; min-width: 200px; }
+  .hero-scroll-hint { justify-content: center; }
+}
+@media (max-width: 480px) {
+  .container { padding: 0 20px; }
+  .hero-h1 { font-size: clamp(2rem, 8.5vw, 2.6rem); }
+  .hero-ctas { flex-direction: column; align-items: stretch; }
+  .hero-ctas .btn { width: 100%; min-width: 0; }
+  .hero-include { font-size: 0.82rem; padding: 10px 12px; }
+}
+</style>
 </head>
 <body>
 
