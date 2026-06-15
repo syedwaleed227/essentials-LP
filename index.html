@@ -3090,5 +3090,29 @@ function ihgPostBody(fields) {
   });
 })();
 </script>
+  <script id="hero-nav-clearance">
+  /* Make the hero clear the floating navbar on phones: measure the navbar's
+     ACTUAL height (varies by device/logo/font scaling) and pad the hero to
+     match, so the nav can never overlap the hero content. */
+  (function () {
+    var mq = window.matchMedia('(max-width: 900px)');
+    function fit() {
+      var nav = document.getElementById('navbar');
+      var hero = document.querySelector('.hero-inner');
+      if (!nav || !hero) return;
+      if (mq.matches) {
+        var top = parseInt(getComputedStyle(nav).top, 10) || 12;
+        hero.style.paddingTop = (nav.offsetHeight + top + 24) + 'px';
+      } else {
+        hero.style.paddingTop = '';
+      }
+    }
+    window.addEventListener('load', fit);
+    window.addEventListener('resize', fit);
+    window.addEventListener('orientationchange', fit);
+    if (document.readyState !== 'loading') fit();
+    else document.addEventListener('DOMContentLoaded', fit);
+  })();
+  </script>
 </body>
 </html>
