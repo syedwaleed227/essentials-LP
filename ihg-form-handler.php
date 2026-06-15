@@ -23,7 +23,7 @@ add_action('wp_ajax_nopriv_ihg_form_submit', 'ihg_handle_form_submit'); // publi
 function ihg_handle_form_submit() {
 
     // === 1. Where submissions are emailed (change if needed) ===
-    $to = 'info@hajeirgroup.com';
+    $to = 'waleed@hajeirgroup.com';
 
     // === 2. Optional honeypot anti-spam ===
     // If you ask me to add the hidden "website" field to the forms, bots that
