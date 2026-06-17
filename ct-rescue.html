@@ -10,6 +10,30 @@
   <meta property="og:type" content="website" />
   <title>IHG CT Rescue Pack — File Your UAE Corporate Tax Return Before September 30, 2026 | Ismail Hajeir Group</title>
 
+  <!-- Google tag (gtag.js) — Google Ads -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-787009483"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-787009483');
+  </script>
+  <!-- Event snippet for Lead Generation conversion -->
+  <script>
+  function gtag_report_conversion(url) {
+    var callback = function () {
+      if (typeof(url) != 'undefined') {
+        window.location = url;
+      }
+    };
+    gtag('event', 'conversion', {
+        'send_to': 'AW-787009483/yowMCN3Bq-caEMufo_cC',
+        'event_callback': callback
+    });
+    return false;
+  }
+  </script>
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -3059,6 +3083,7 @@ function ihgPostBody(fields) {
       if (data.success) {
         form.style.display = 'none';
         if (success) success.classList.add('show');
+        if (typeof gtag_report_conversion === 'function') { gtag_report_conversion(); }
       } else { throw new Error('server'); }
     })
     .catch(function () {
@@ -3151,6 +3176,7 @@ function ihgPostBody(fields) {
     .then(function (data) {
       if (data.success) {
         form.style.display = 'none';
+        if (typeof gtag_report_conversion === 'function') { gtag_report_conversion(); }
         if (successMsg) {
           successMsg.classList.add('show');
           var top = successMsg.getBoundingClientRect().top + window.pageYOffset - 150;
